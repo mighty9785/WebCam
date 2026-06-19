@@ -59,13 +59,16 @@ function ensureHttpsCertificates() {
   }
 }
 
-const hasHttpsCerts = ensureHttpsCertificates();
+const isRender = !!process.env.RENDER_SERVICE_ID || !!process.env.RENDER_INTERNAL_HOSTNAME || process.env.NODE_ENV === 'production';
+const hasHttpsCerts = !isRender && ensureHttpsCertificates();
 const server = hasHttpsCerts
   ? https.createServer({ key: fs.readFileSync(keyPath), cert: fs.readFileSync(certPath) }, app)
   : http.createServer(app);
 const io = new Server(server);
 
 const scheme = hasHttpsCerts ? 'https' : 'http';
+
+app.set('trust proxy', true);
 
 function broadcastCameras() {
   const list = Object.values(cameras).map((c) => ({ id: c.id, name: c.name || c.id }));
@@ -76,7 +79,9 @@ app.use(express.static('public'));
 
 app.get('/api/info', (req, res) => {
   const ip = getLocalIPAddress() || '127.0.0.1';
-  res.json({ ip, url: `${scheme}://${ip}:${port}` });
+  const protocol = req.protocol || scheme;
+  const host = req.get('host') || `localhost:${port}`;
+  res.json({ ip, url: `${protocol}://${host}` });
 });
 
 app.get('/api/cameras', (req, res) => {
