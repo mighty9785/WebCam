@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webcame | Viewer</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="card">
+      <h1>Viewer Mode</h1>
+      <p>Receive the live feed from your phone and display it with low latency.</p>
+    </header>
+
+    <section class="card video-panel">
+      <div id="streamsGrid" class="control-room grid" style="gap:12px;"></div>
+      <div class="overlay">
+        <span class="chip">Live Feeds</span>
+        <span id="viewer-info" class="chip">Waiting for cameras</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="status-badge status-offline" id="connectionStatus">
+        <span></span><strong id="statusText">Connecting…</strong>
+      </div>
+
+      <div class="action-row" style="margin-top: 18px;">
+        <button id="btnFullscreen" class="primary">Full Screen</button>
+      </div>
+
+      <div style="margin-top:18px;">
+        <h3>Available Cameras</h3>
+        <div id="cameraList" class="code-block"></div>
+      </div>
+
+      <div class="code-block" style="margin-top: 18px;">
+        <p><strong>Instructions:</strong></p>
+        <ol>
+          <li>Open the camera page on your phone.</li>
+          <li>Press Start Streaming on the phone.</li>
+          <li>The viewer will connect automatically.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="card grid grid-cols-2">
+      <div class="code-block"><strong>FPS</strong><div id="fpsDisplay">0</div></div>
+      <div class="code-block"><strong>Connection status</strong><div id="peerStatus">Waiting</div></div>
+    </section>
+
+    <footer>
+      For best quality, keep the phone camera stable and use a strong local network connection.
+    </footer>
+  </main>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/viewer.js"></script>
+</body>
+</html>

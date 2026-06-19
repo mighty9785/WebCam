@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webcame | Phone Webcam</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="card">
+      <h1>Webcame</h1>
+      <p>Use your Android phone camera as a webcam on the same local network. No account, no cloud, no database.</p>
+    </header>
+
+    <section class="grid grid-cols-2">
+      <div class="card">
+        <h2>Quick start</h2>
+        <ul>
+          <li>Open this page on both devices.</li>
+          <li>Tap <strong>Camera</strong> on your phone.</li>
+          <li>Tap <strong>Viewer</strong> on your computer.</li>
+          <li>Start streaming and enjoy low-latency WebRTC video.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Local access</h2>
+        <p class="instructions">Your computer can connect using the local URL below. Use the same network on your phone and PC.</p>
+        <div class="code-block">
+          <pre id="local-url">Loading local address…</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="action-row">
+        <a href="camera.html"><button class="primary">Open Camera Page</button></a>
+        <a href="viewer.html"><button class="secondary">Open Viewer Page</button></a>
+      </div>
+      <p style="margin-top: 14px;">If you're on mobile, the app will suggest the camera mode automatically.</p>
+    </section>
+
+    <section class="card">
+      <h2>Scan to connect</h2>
+      <p>Scan this QR code from your phone to open the camera page instantly.</p>
+      <div id="qrcode" class="code-block" style="text-align:center; padding: 20px;"></div>
+    </section>
+
+    <section class="card">
+      <h2>Best experience</h2>
+      <ul>
+        <li>Use Chrome, Edge, or Firefox on Android.</li>
+        <li>Keep both devices on the same Wi-Fi or hotspot network.</li>
+        <li>Allow camera permissions when prompted.</li>
+      </ul>
+    </section>
+
+    <footer>
+      Running fully locally with WebRTC + Socket.IO signaling.
+    </footer>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+  <script src="js/index.js"></script>
+</body>
+</html>

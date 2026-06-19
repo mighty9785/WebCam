@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webcame | Camera</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="card">
+      <h1>Camera Mode</h1>
+      <p>Stream your Android phone camera to the viewer on the same local network.</p>
+    </header>
+
+    <section class="card video-panel">
+      <video id="cameraPreview" playsinline autoplay muted></video>
+      <div class="overlay">
+        <span class="chip">Preview</span>
+        <span id="video-info" class="chip">No camera selected</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="status-badge status-offline" id="connectionStatus">
+        <span></span><strong id="statusText">Connecting…</strong>
+      </div>
+
+      <div class="action-row" style="margin-top: 18px;">
+        <button id="btnStart" class="primary">Start Streaming</button>
+        <button id="btnStop" class="danger" disabled>Stop Streaming</button>
+        <button id="btnSwitch" class="secondary">Switch Camera</button>
+      </div>
+
+      <div class="code-block" style="margin-top: 18px;">
+        <p><strong>Instructions:</strong></p>
+        <ol>
+          <li>Allow the browser to access the camera.</li>
+          <li>Press Start Streaming when you are ready.</li>
+          <li>Open the Viewer page on your computer.</li>
+        </ol>
+        <p id="hintText">Looking for a viewer? Open <strong>viewer.html</strong> on your PC using the same network address.</p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Stream status</h2>
+      <div class="grid">
+        <div class="code-block"><strong>Local IP</strong><div id="localIp">Loading…</div></div>
+        <div class="code-block"><strong>Stream mode</strong><div id="streamMode">Stopped</div></div>
+      </div>
+    </section>
+
+    <footer>
+      Your phone is the camera source. Viewer will receive the live stream directly over WebRTC.
+    </footer>
+  </main>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/camera.js"></script>
+</body>
+</html>
