@@ -1,4 +1,4 @@
-const SUPABASE_URL = '<https://jszvcbbobpkexriwkrai.supabase.co>';
+const SUPABASE_URL = 'https://jszvcbbobpkexriwkrai.supabase.co';
 const SUPABASE_ANON_KEY = '<eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpzenZjYmJvYnBrZXhyaXdrcmFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4Nzg3NTcsImV4cCI6MjA5NzQ1NDc1N30.98XRE_Pa_lk_KN-m_u98mlJYrNY8jYiCO96uwa2ReGI>';
 
 window.supabaseClient = null;
