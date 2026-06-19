@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webcame | Chat</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .contacts { background: rgba(255,255,255,0.02); padding: 12px; border-radius: 12px; }
+    .contact { padding: 10px; border-radius: 10px; cursor: pointer; }
+    .contact:hover { background: rgba(255,255,255,0.03); }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <header class="card">
+      <h1>Live Chat</h1>
+      <p>Shared chat for all connected devices — messages expire after 30 minutes.</p>
+    </header>
+
+    <section class="card chat-shell">
+      <aside class="chat-sidebar">
+        <div class="chat-header">
+          <div style="flex:1">
+            <input id="nameInput" placeholder="Your name" style="width:100%; padding:10px 12px; border-radius:12px; border:none; background:rgba(255,255,255,0.03); color:var(--text)" />
+          </div>
+          <div>
+            <button id="joinBtn" class="primary">Join</button>
+          </div>
+        </div>
+
+        <div class="contacts code-block">
+          <div style="font-weight:700; margin-bottom:8px">Active</div>
+          <div class="contact">All participants</div>
+        </div>
+      </aside>
+
+      <div class="chat-window">
+        <div id="chatMessages" class="chat-messages"></div>
+
+        <div class="chat-input-area">
+          <input id="chatText" class="chat-input" type="text" placeholder="Type a message" />
+          <label class="chat-file-label">
+            <input id="chatFile" type="file" accept="image/*" />Attach
+          </label>
+          <button id="chatSend" class="chat-send primary">Send</button>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Chat powered by WebSocket (no database). Images are base64-encoded.
+    </footer>
+  </main>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="js/chat.js"></script>
+</body>
+</html>
