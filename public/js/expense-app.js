@@ -65,6 +65,13 @@ window.getUserGroups = function (user) {
   );
 };
 
+window.getAvailableGroupMembers = function (ownerEmail) {
+  const ownerLower = ownerEmail.toLowerCase();
+  return window.getExpenseUsers()
+    .filter((user) => user.email.toLowerCase() !== ownerLower)
+    .map((user) => user.email);
+};
+
 window.createExpenseGroup = function (owner, name, members) {
   const trimmedName = name.trim();
   const normalizedMembers = Array.from(new Set([owner.email, ...members

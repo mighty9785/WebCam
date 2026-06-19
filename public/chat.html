@@ -18,7 +18,7 @@
       <p>Shared chat for all connected devices — messages expire after 30 minutes.</p>
     </header>
 
-    <section class="card app-shell">
+    <section class="card chat-shell app-shell">
       <aside class="sidebar">
         <div class="nav-icon active" title="Broadcast" data-target="camera.html">📷</div>
         <div class="nav-icon" title="Chat" data-target="chat.html">💬</div>
@@ -31,29 +31,7 @@
         <div class="chat-search">
           <input id="searchInput" placeholder="Search or start new chat" />
         </div>
-        <div class="chat-items" id="chatItems">
-          <!-- Example items; will be dynamic later -->
-          <div class="chat-item active">
-            <img src="https://i.pravatar.cc/44?img=5" alt="avatar" />
-            <div class="meta">
-              <div>
-                <div class="name">General Chat</div>
-                <div class="typing">Hey, welcome to Webcame chat</div>
-              </div>
-              <div class="time">11:20 am</div>
-            </div>
-          </div>
-          <div class="chat-item">
-            <img src="https://i.pravatar.cc/44?img=6" alt="avatar" />
-            <div class="meta">
-              <div>
-                <div class="name">Camera 1</div>
-                <div class="typing">Streaming live</div>
-              </div>
-              <div class="time">9:41 am</div>
-            </div>
-          </div>
-        </div>
+        <div class="chat-items" id="chatItems"></div>
       </div>
 
       <div class="chat-window">

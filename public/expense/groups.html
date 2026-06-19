@@ -27,8 +27,14 @@
           <label for="group-name">Group name</label>
           <input id="group-name" type="text" required placeholder="Roommates, Trip Crew, Split Club">
 
-          <label for="group-members">Members</label>
-          <input id="group-members" type="text" placeholder="Email addresses separated by commas">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <label>Choose members</label>
+              <span id="selected-count" class="expense-chip">0 selected</span>
+            </div>
+            <div id="available-users" class="available-user-grid"></div>
+            <div id="selected-members" class="selected-user-list"></div>
+          </div>
 
           <button type="submit" class="primary" style="width:100%; margin-top:20px;">Create group</button>
         </form>
@@ -51,11 +57,69 @@
     document.getElementById('logout-button').addEventListener('click', logoutExpense);
 
     const groupForm = document.getElementById('group-form');
+    const selectedMembers = new Set();
+    const availableUsersContainer = document.getElementById('available-users');
+    const selectedMembersContainer = document.getElementById('selected-members');
+    const selectedCountLabel = document.getElementById('selected-count');
+
+    function updateSelectedCount() {
+      selectedCountLabel.textContent = `${selectedMembers.size} selected`;
+    }
+
+    function renderSelectedMembers() {
+      if (!selectedMembers.size) {
+        selectedMembersContainer.innerHTML = '<div class="expense-subtitle">Tap a user above to add them to the group.</div>';
+        return;
+      }
+      selectedMembersContainer.innerHTML = Array.from(selectedMembers).map((email) => `
+        <span class="member-chip">
+          ${email}
+          <button type="button" data-email="${email}" class="remove-member" aria-label="Remove ${email}">×</button>
+        </span>
+      `).join('');
+      selectedMembersContainer.querySelectorAll('.remove-member').forEach((button) => {
+        button.addEventListener('click', () => {
+          selectedMembers.delete(button.dataset.email);
+          renderSelectedMembers();
+          updateAvailableUsers();
+          updateSelectedCount();
+        });
+      });
+    }
+
+    function updateAvailableUsers() {
+      const available = getAvailableGroupMembers(user.email);
+      if (!available.length) {
+        availableUsersContainer.innerHTML = '<div class="expense-subtitle">No other registered users available. Ask friends to sign up first.</div>';
+        return;
+      }
+
+      availableUsersContainer.innerHTML = available.map((email) => {
+        const active = selectedMembers.has(email) ? 'selected' : '';
+        return `
+          <button type="button" class="available-user ${active}" data-email="${email}">${email}</button>
+        `;
+      }).join('');
+
+      availableUsersContainer.querySelectorAll('.available-user').forEach((button) => {
+        button.addEventListener('click', () => {
+          const email = button.dataset.email;
+          if (selectedMembers.has(email)) {
+            selectedMembers.delete(email);
+          } else {
+            selectedMembers.add(email);
+          }
+          renderSelectedMembers();
+          updateAvailableUsers();
+          updateSelectedCount();
+        });
+      });
+    }
+
     groupForm.addEventListener('submit', (event) => {
       event.preventDefault();
       const name = document.getElementById('group-name').value.trim();
-      const membersRaw = document.getElementById('group-members').value;
-      const members = membersRaw.split(',').map((item) => item.trim()).filter((item) => item);
+      const members = Array.from(selectedMembers);
 
       if (!name) {
         alert('Enter a name for the group.');
@@ -64,7 +128,10 @@
 
       createExpenseGroup(user, name, members);
       document.getElementById('group-name').value = '';
-      document.getElementById('group-members').value = '';
+      selectedMembers.clear();
+      updateSelectedCount();
+      renderSelectedMembers();
+      updateAvailableUsers();
       renderGroups();
     });
 

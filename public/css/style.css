@@ -4,14 +4,14 @@
   --sidebar-bg: #EEF2EE; /* sidebar */
   --surface: #FFFFFF; /* cards */
   --primary-dark: #111111; /* receiver bubble */
-  --text: #1E1E1E;
+  --text: #d6d6d6;
   --muted: #7A7A7A;
   --border: #E5E7EB;
   --success: #22C55E;
   --glass: rgba(255,255,255,0.6);
   --radius-lg: 20px;
   --radius: 18px;
-  --shadow-soft: 0 10px 30px rgba(0,0,0,0.06);
+  --shadow-soft: 0 10px 30px rgba(202, 193, 193, 0.06);
 }
 
 * { box-sizing: border-box; }
@@ -257,6 +257,12 @@ footer {
 .auth-footer { margin-top: 18px; color: var(--muted); }
 .auth-footer a { color: #0ea5e9; text-decoration: none; }
 .expense-form { display: grid; gap: 14px; }
+.available-user-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; margin-top:12px; }
+.available-user { display:inline-flex; align-items:center; justify-content:center; padding:12px 14px; border-radius:16px; border:1px solid var(--border); background:var(--surface); color:var(--text); cursor:pointer; transition:transform .18s ease, background .18s ease, border-color .18s ease; }
+.available-user.selected { background:rgba(56,189,248,0.1); border-color:rgba(56,189,248,0.4); }
+.selected-user-list { margin-top:14px; display:flex; flex-wrap:wrap; gap:10px; }
+.member-chip { display:inline-flex; align-items:center; gap:8px; padding:10px 14px; border-radius:999px; background:rgba(15,23,42,0.06); color:var(--text); font-size:0.95rem; }
+.member-chip button { border:none; background:transparent; font-size:1rem; line-height:1; cursor:pointer; color:var(--muted); }
 
 /* WhatsApp-like layout for chat page */
 .chat-shell {
@@ -271,6 +277,13 @@ footer {
 .nav-icon { width:48px; height:48px; display:flex; align-items:center; justify-content:center; border-radius:999px; color:var(--primary-dark); cursor:pointer; transition:transform .18s ease, background .18s ease; }
 .nav-icon:hover { transform:scale(1.03); background: rgba(0,0,0,0.04); }
 .nav-icon.active { background: var(--primary-dark); color:var(--surface); }
+
+@media (max-width: 900px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar { width: 100%; height: auto; flex-direction: row; justify-content: flex-start; flex-wrap: wrap; padding: 14px; }
+  .nav-icon { width: 44px; height: 44px; }
+  .chat-list, .chat-window { height: auto; }
+}
 
 .chat-list { background: var(--surface); border:1px solid var(--border); border-radius: var(--radius); overflow:hidden; display:flex; flex-direction:column; height:68vh; }
 .chat-search { padding:12px; border-bottom:1px solid var(--border); }
