@@ -176,7 +176,7 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(port, () => {
+server.listen(port, '0.0.0.0', () => {
   const ip = getLocalIPAddress() || '127.0.0.1';
   console.log(`Server running at ${scheme}://${ip}:${port}`);
   console.log('Open this URL from any device on the same network.');
