@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Manager • Login</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <main class="page-shell auth-shell">
+    <section class="auth-card">
+      <div class="expense-header">
+        <h1 class="expense-title">Expense Manager</h1>
+        <p class="expense-subtitle">Sign in to your group expense workspace.</p>
+      </div>
+      <form id="login-form" class="expense-form">
+        <label for="login-email">Email</label>
+        <input id="login-email" type="email" autocomplete="username" required placeholder="you@example.com">
+
+        <label for="login-password">Password</label>
+        <input id="login-password" type="password" autocomplete="current-password" required placeholder="Enter your password">
+
+        <button type="submit" class="primary" style="width:100%; margin-top:20px;">Continue</button>
+      </form>
+      <p class="auth-footer">New here? <a href="signup.html">Create an account</a></p>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/expense-app.js"></script>
+  <script>
+    initSupabaseClient();
+
+    document.getElementById('login-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+
+      if (!email || !password) {
+        alert('Please enter both email and password.');
+        return;
+      }
+
+      const response = loginExpenseUser(email, password);
+      if (response.error) {
+        alert(response.error);
+        return;
+      }
+
+      setCurrentUser(response.user);
+      window.location.href = 'dashboard.html';
+    });
+  </script>
+</body>
+</html>

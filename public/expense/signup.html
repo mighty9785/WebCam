@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Manager • Sign Up</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <main class="page-shell auth-shell">
+    <section class="auth-card">
+      <div class="expense-header">
+        <h1 class="expense-title">Create a new account</h1>
+        <p class="expense-subtitle">Start tracking shared expenses with your groups.</p>
+      </div>
+      <form id="signup-form" class="expense-form">
+        <label for="signup-email">Email</label>
+        <input id="signup-email" type="email" autocomplete="username" required placeholder="you@example.com">
+
+        <label for="signup-password">Password</label>
+        <input id="signup-password" type="password" autocomplete="new-password" required placeholder="Choose a password">
+
+        <button type="submit" class="primary" style="width:100%; margin-top:20px;">Create account</button>
+      </form>
+      <p class="auth-footer">Already have an account? <a href="login.html">Log in</a></p>
+    </section>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/expense-app.js"></script>
+  <script>
+    initSupabaseClient();
+
+    document.getElementById('signup-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value.trim();
+
+      if (!email || !password) {
+        alert('Enter both email and password to continue.');
+        return;
+      }
+
+      const response = registerExpenseUser(email, password);
+      if (response.error) {
+        alert(response.error);
+        return;
+      }
+
+      setCurrentUser(response.user);
+      window.location.href = 'dashboard.html';
+    });
+  </script>
+</body>
+</html>

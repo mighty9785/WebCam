@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Manager • Groups</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <main class="page-shell">
+    <section class="expense-card">
+      <div class="expense-header">
+        <div>
+          <h1 class="expense-title">Groups</h1>
+          <p class="expense-subtitle">Create and manage your shared expense groups.</p>
+        </div>
+        <div class="action-row">
+          <a href="dashboard.html"><button class="secondary">Dashboard</button></a>
+          <a href="expenses.html"><button class="secondary">Expenses</button></a>
+          <a href="settlements.html"><button class="secondary">Settlements</button></a>
+          <button id="logout-button" class="secondary">Logout</button>
+        </div>
+      </div>
+      <section class="expense-card" style="margin-bottom:24px;">
+        <h2 class="expense-title">Add a new group</h2>
+        <form id="group-form" class="expense-form">
+          <label for="group-name">Group name</label>
+          <input id="group-name" type="text" required placeholder="Roommates, Trip Crew, Split Club">
+
+          <label for="group-members">Members</label>
+          <input id="group-members" type="text" placeholder="Email addresses separated by commas">
+
+          <button type="submit" class="primary" style="width:100%; margin-top:20px;">Create group</button>
+        </form>
+      </section>
+      <section class="expense-card">
+        <h2 class="expense-title">Your groups</h2>
+        <div id="group-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/expense-app.js"></script>
+  <script>
+    initSupabaseClient();
+    const user = requireExpenseAuth();
+    if (!user) return;
+
+    document.getElementById('logout-button').addEventListener('click', logoutExpense);
+
+    const groupForm = document.getElementById('group-form');
+    groupForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const name = document.getElementById('group-name').value.trim();
+      const membersRaw = document.getElementById('group-members').value;
+      const members = membersRaw.split(',').map((item) => item.trim()).filter((item) => item);
+
+      if (!name) {
+        alert('Enter a name for the group.');
+        return;
+      }
+
+      createExpenseGroup(user, name, members);
+      document.getElementById('group-name').value = '';
+      document.getElementById('group-members').value = '';
+      renderGroups();
+    });
+
+    function renderGroups() {
+      const groups = getUserGroups(user);
+      const list = document.getElementById('group-list');
+
+      if (!groups.length) {
+        list.innerHTML = '<p class="expense-subtitle">No groups created yet. Fill in the form above to add your first shared group.</p>';
+        return;
+      }
+
+      list.innerHTML = groups.map((group) => {
+        const totals = computeGroupTotals(group.id);
+        return `
+          <div class="expense-card" style="margin-bottom:16px;">
+            <div class="expense-header">
+              <div>
+                <h3 class="expense-title">${group.name}</h3>
+                <p class="expense-subtitle">${group.members.length} members</p>
+              </div>
+              <a class="expense-tab" href="expenses.html?groupId=${group.id}">View expenses</a>
+            </div>
+            <div class="expense-grid" style="grid-template-columns:repeat(3,minmax(100px,1fr));">
+              <div><strong>${totals.count}</strong><div class="expense-chip">Expenses</div></div>
+              <div><strong>${formatExpenseAmount(totals.total)}</strong><div class="expense-chip">Total spent</div></div>
+              <div><strong>${group.members.join(', ')}</strong><div class="expense-chip">Members</div></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    renderGroups();
+  </script>
+</body>
+</html>

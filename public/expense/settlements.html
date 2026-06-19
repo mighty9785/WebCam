@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Manager • Settlements</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <main class="page-shell">
+    <section class="expense-card">
+      <div class="expense-header">
+        <div>
+          <h1 class="expense-title">Settlements</h1>
+          <p class="expense-subtitle">Review who owes what and settle balances.</p>
+        </div>
+        <div class="action-row">
+          <a href="dashboard.html"><button class="secondary">Dashboard</button></a>
+          <a href="groups.html"><button class="secondary">Groups</button></a>
+          <a href="expenses.html"><button class="secondary">Expenses</button></a>
+          <button id="logout-button" class="secondary">Logout</button>
+        </div>
+      </div>
+      <section class="expense-card" style="margin-bottom:24px;">
+        <h2 class="expense-title">Group balances</h2>
+        <div id="settlement-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/expense-app.js"></script>
+  <script>
+    initSupabaseClient();
+    const user = requireExpenseAuth();
+    if (!user) return;
+    document.getElementById('logout-button').addEventListener('click', logoutExpense);
+
+    function renderSettlements() {
+      const groups = getUserGroups(user);
+      const container = document.getElementById('settlement-list');
+      if (!groups.length) {
+        container.innerHTML = '<p class="expense-subtitle">You have no groups yet. Add one on the groups screen to see settlements.</p>';
+        return;
+      }
+
+      container.innerHTML = groups.map((group) => {
+        const balances = computeGroupBalances(group.id);
+        const items = balances.map((balance) => {
+          const label = balance.amount >= 0 ? 'should receive' : 'owes';
+          const amount = formatExpenseAmount(Math.abs(balance.amount));
+          const badgeClass = balance.amount >= 0 ? 'expense-badge' : 'expense-negative';
+          return `
+            <div class="expense-card" style="margin-bottom:14px;">
+              <div class="expense-header">
+                <div>
+                  <h3 class="expense-title">${group.name}</h3>
+                  <p class="expense-subtitle">${balance.email} ${label} ${amount}</p>
+                </div>
+                <span class="${badgeClass}">${balance.amount >= 0 ? 'Receive' : 'Pay'}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="expense-card" style="margin-bottom:16px;">
+            <h3 class="expense-title">${group.name}</h3>
+            ${items || '<p class="expense-subtitle">No expenses yet for this group.</p>'}
+          </div>
+        `;
+      }).join('');
+    }
+
+    renderSettlements();
+  </script>
+</body>
+</html>

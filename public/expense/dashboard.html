@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Manager • Dashboard</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <main class="page-shell">
+    <section class="expense-card">
+      <div class="expense-header">
+        <div>
+          <h1 class="expense-title">Dashboard</h1>
+          <p class="expense-subtitle" id="welcome-text">Welcome back.</p>
+        </div>
+        <div class="action-row">
+          <a href="groups.html"><button class="secondary">Groups</button></a>
+          <a href="expenses.html"><button class="secondary">Expenses</button></a>
+          <a href="settlements.html"><button class="secondary">Settlements</button></a>
+          <button id="logout-button" class="secondary">Logout</button>
+        </div>
+      </div>
+      <div class="expense-grid" id="dashboard-stats"></div>
+      <section class="expense-card" style="margin-top:20px;">
+        <h2 class="expense-title">Your groups</h2>
+        <div id="group-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/expense-app.js"></script>
+  <script>
+    initSupabaseClient();
+    const user = requireExpenseAuth();
+    if (!user) return;
+
+    document.getElementById('logout-button').addEventListener('click', logoutExpense);
+    document.getElementById('welcome-text').textContent = `Welcome back, ${user.name}.`;
+
+    function renderSummary() {
+      const groups = getUserGroups(user);
+      const expenses = getExpenseItems().filter((expense) =>
+        groups.some((group) => group.id === expense.groupId)
+      );
+
+      const totalBalance = groups.reduce((sum, group) => {
+        const balances = computeGroupBalances(group.id);
+        const current = balances.find((record) => record.email.toLowerCase() === user.email.toLowerCase());
+        return sum + (current ? current.amount : 0);
+      }, 0);
+
+      const grid = document.getElementById('dashboard-stats');
+      grid.innerHTML = `
+        <div class="expense-card">
+          <h3 class="expense-title">Groups</h3>
+          <p class="expense-subtitle">${groups.length} active</p>
+        </div>
+        <div class="expense-card">
+          <h3 class="expense-title">Expenses</h3>
+          <p class="expense-subtitle">${expenses.length} total</p>
+        </div>
+        <div class="expense-card">
+          <h3 class="expense-title">Balance</h3>
+          <p class="expense-subtitle">${formatExpenseAmount(totalBalance)}</p>
+        </div>
+      `;
+    }
+
+    function renderGroups() {
+      const groups = getUserGroups(user);
+      const container = document.getElementById('group-list');
+      if (!groups.length) {
+        container.innerHTML = '<p class="expense-subtitle">No groups yet. Add one on the groups page to begin tracking shared costs.</p>';
+        return;
+      }
+
+      container.innerHTML = groups.map((group) => {
+        const totals = computeGroupTotals(group.id);
+        return `
+          <div class="expense-card" style="margin-bottom:16px;">
+            <div class="expense-header">
+              <div>
+                <h3 class="expense-title">${group.name}</h3>
+                <p class="expense-subtitle">${group.members.length} members</p>
+              </div>
+              <a class="expense-tab" href="expenses.html?groupId=${group.id}">View</a>
+            </div>
+            <div class="expense-grid" style="grid-template-columns:repeat(3,minmax(100px,1fr));">
+              <div><strong>${totals.count}</strong><div class="expense-chip">Expenses</div></div>
+              <div><strong>${formatExpenseAmount(totals.total)}</strong><div class="expense-chip">Total spent</div></div>
+              <div><strong>${formatExpenseAmount(computeGroupBalances(group.id).find((record) => record.email.toLowerCase() === user.email.toLowerCase())?.amount || 0)}</strong><div class="expense-chip">Your balance</div></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    renderSummary();
+    renderGroups();
+  </script>
+</body>
+</html>

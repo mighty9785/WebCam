@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Manager • Expenses</title>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <main class="page-shell">
+    <section class="expense-card">
+      <div class="expense-header">
+        <div>
+          <h1 class="expense-title">Expenses</h1>
+          <p class="expense-subtitle">Track bills and split costs across groups.</p>
+        </div>
+        <div class="action-row">
+          <a href="dashboard.html"><button class="secondary">Dashboard</button></a>
+          <a href="groups.html"><button class="secondary">Groups</button></a>
+          <a href="settlements.html"><button class="secondary">Settlements</button></a>
+          <button id="logout-button" class="secondary">Logout</button>
+        </div>
+      </div>
+      <div class="expense-card" style="margin-bottom:24px;">
+        <h2 class="expense-title">Add expense</h2>
+        <form id="expense-form" class="expense-form">
+          <label for="expense-group">Group</label>
+          <select id="expense-group" class="expense-input" required></select>
+
+          <label for="expense-description">Description</label>
+          <input id="expense-description" type="text" class="expense-input" required placeholder="Dinner, taxi, utilities, snacks">
+
+          <label for="expense-amount">Amount</label>
+          <input id="expense-amount" type="number" min="0" step="0.01" class="expense-input" required placeholder="1000">
+
+          <label for="expense-paid-by">Paid by</label>
+          <select id="expense-paid-by" class="expense-input" required></select>
+
+          <label for="expense-split">Split between</label>
+          <select id="expense-split" class="expense-input" multiple size="4"></select>
+
+          <button type="submit" class="primary" style="width:100%; margin-top:20px;">Save expense</button>
+        </form>
+      </div>
+      <section class="expense-card">
+        <div class="expense-header">
+          <h2 class="expense-title">Expense history</h2>
+          <p class="expense-subtitle" id="expense-group-label">Showing all recent entries.</p>
+        </div>
+        <div id="expense-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="../js/expense-app.js"></script>
+  <script>
+    initSupabaseClient();
+    const user = requireExpenseAuth();
+    if (!user) return;
+    document.getElementById('logout-button').addEventListener('click', logoutExpense);
+
+    const groupSelect = document.getElementById('expense-group');
+    const paidBySelect = document.getElementById('expense-paid-by');
+    const splitSelect = document.getElementById('expense-split');
+    const groupLabel = document.getElementById('expense-group-label');
+
+    function loadGroups() {
+      const groups = getUserGroups(user);
+      groupSelect.innerHTML = groups.map((group) => `<option value="${group.id}">${group.name}</option>`).join('');
+      const selectedGroupId = window.getParam('groupId') || (groups[0] && groups[0].id) || '';
+      groupSelect.value = selectedGroupId;
+      return getGroupById(groupSelect.value);
+    }
+
+    function loadMembers(group) {
+      const options = group.members.map((member) => `<option value="${member}">${member}</option>`).join('');
+      paidBySelect.innerHTML = options;
+      splitSelect.innerHTML = options;
+      Array.from(splitSelect.options).forEach((opt) => opt.selected = true);
+    }
+
+    function renderExpenses(group) {
+      const expenses = group ? getExpensesByGroup(group.id) : [];
+      groupLabel.textContent = group ? `Showing expenses for ${group.name}` : 'No group selected yet.';
+      const list = document.getElementById('expense-list');
+
+      if (!group || !expenses.length) {
+        list.innerHTML = '<p class="expense-subtitle">No expense records available. Add one using the form above.</p>';
+        return;
+      }
+
+      list.innerHTML = expenses.map((expense) => `
+        <div class="expense-card" style="margin-bottom:16px;">
+          <div class="expense-header">
+            <div>
+              <h3 class="expense-title">${expense.description}</h3>
+              <p class="expense-subtitle">Paid by ${expense.paidBy} • ${formatExpenseDate(expense.createdAt)}</p>
+            </div>
+            <span class="expense-badge">${formatExpenseAmount(expense.amount)}</span>
+          </div>
+          <div class="expense-chip">Split between ${expense.splitBetween.join(', ')}</div>
+        </div>
+      `).join('');
+    }
+
+    function refreshView() {
+      const group = loadGroups();
+      if (group) loadMembers(group);
+      renderExpenses(group);
+    }
+
+    document.getElementById('expense-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+      const group = getGroupById(groupSelect.value);
+      const description = document.getElementById('expense-description').value.trim();
+      const amount = document.getElementById('expense-amount').value.trim();
+      const paidBy = paidBySelect.value;
+      const splitBetween = Array.from(splitSelect.selectedOptions).map((option) => option.value);
+
+      if (!group || !description || !amount || !paidBy || !splitBetween.length) {
+        alert('Fill all fields and choose a split group.');
+        return;
+      }
+
+      addExpenseItem(group.id, description, amount, paidBy, splitBetween);
+      document.getElementById('expense-description').value = '';
+      document.getElementById('expense-amount').value = '';
+      refreshView();
+    });
+
+    groupSelect.addEventListener('change', refreshView);
+    refreshView();
+  </script>
+</body>
+</html>
