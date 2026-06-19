@@ -50,6 +50,22 @@
       <div class="code-block"><strong>Connection status</strong><div id="peerStatus">Waiting</div></div>
     </section>
 
+    <section class="card">
+      <h2>Live chat</h2>
+      <div id="chatHistory" class="chat-history"></div>
+      <div class="chat-input-row">
+        <input id="chatInput" type="text" placeholder="Type a message…" autocomplete="off" />
+        <button id="sendChatBtn" class="primary">Send</button>
+      </div>
+      <div class="chat-file-row">
+        <label class="chat-file-label">
+          <span>Attach photo</span>
+          <input id="photoInput" type="file" accept="image/*" />
+        </label>
+        <span class="chat-note">Messages and photos disappear after 30 minutes.</span>
+      </div>
+    </section>
+
     <footer>
       For best quality, keep the phone camera stable and use a strong local network connection.
     </footer>

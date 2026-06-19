@@ -7,6 +7,10 @@ const statusText = document.getElementById('statusText');
 const connectionStatus = document.getElementById('connectionStatus');
 const viewerInfo = document.getElementById('viewer-info');
 const cameraList = document.getElementById('cameraList');
+const chatHistory = document.getElementById('chatHistory');
+const chatInput = document.getElementById('chatInput');
+const sendChatBtn = document.getElementById('sendChatBtn');
+const photoInput = document.getElementById('photoInput');
 
 const pcs = {}; // cameraId -> { pc, video, container }
 
@@ -61,12 +65,16 @@ socket.on('signaling-error', (message) => {
   updateStatus(message.message, 'danger');
 });
 
+socket.on('chat-history', renderChatHistory);
+socket.on('chat-message', renderChatMessage);
+
 function renderCameraList(list) {
   cameraList.innerHTML = '';
   if (!list || list.length === 0) {
     cameraList.textContent = 'No cameras found.';
     return;
   }
+
   list.forEach((cam) => {
     const row = document.createElement('div');
     row.style.display = 'flex';
@@ -75,30 +83,115 @@ function renderCameraList(list) {
     row.style.marginBottom = '8px';
 
     const label = document.createElement('div');
-    // sanitize name coming from server (avoid literal 'null')
     const dispName = (cam.name && cam.name !== 'null') ? cam.name : cam.id;
     label.textContent = dispName;
+
     const actions = document.createElement('div');
     const watchBtn = document.createElement('button');
     watchBtn.textContent = 'Watch';
     watchBtn.className = 'primary';
     watchBtn.addEventListener('click', () => startWatch(cam.id, cam.name));
+
     const stopBtn = document.createElement('button');
     stopBtn.textContent = 'Stop';
     stopBtn.className = 'danger';
     stopBtn.style.marginLeft = '8px';
     stopBtn.addEventListener('click', () => stopWatch(cam.id));
+
     actions.appendChild(watchBtn);
     actions.appendChild(stopBtn);
-
     row.appendChild(label);
     row.appendChild(actions);
     cameraList.appendChild(row);
   });
 }
 
+function scrollChatToBottom() {
+  if (!chatHistory) return;
+  chatHistory.scrollTop = chatHistory.scrollHeight;
+}
+
+function renderChatMessage(message) {
+  if (!chatHistory) return;
+  const item = document.createElement('div');
+  item.className = 'chat-message';
+
+  const header = document.createElement('div');
+  header.className = 'chat-message-header';
+
+  const author = document.createElement('span');
+  author.className = 'chat-message-author';
+  author.textContent = message.senderName;
+
+  const timestamp = document.createElement('span');
+  timestamp.className = 'chat-message-time';
+  timestamp.textContent = new Date(message.timestamp).toLocaleTimeString();
+
+  header.appendChild(author);
+  header.appendChild(timestamp);
+
+  const body = document.createElement('div');
+  body.className = 'chat-message-body';
+
+  if (message.type === 'text') {
+    body.textContent = message.text;
+  } else if (message.type === 'image') {
+    const image = document.createElement('img');
+    image.src = message.dataUrl;
+    image.alt = message.filename || 'Shared photo';
+    body.appendChild(image);
+  }
+
+  item.appendChild(header);
+  item.appendChild(body);
+  chatHistory.appendChild(item);
+  scrollChatToBottom();
+}
+
+function renderChatHistory(messages) {
+  if (!chatHistory) return;
+  chatHistory.innerHTML = '';
+  messages.forEach(renderChatMessage);
+}
+
+function handleSendChat() {
+  if (!chatInput) return;
+  const text = chatInput.value.trim();
+  if (!text) return;
+  socket.emit('chat-message', { text });
+  chatInput.value = '';
+}
+
+function handlePhotoUpload(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    alert('Please select an image file.');
+    photoInput.value = '';
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Image is too large. Please choose a file smaller than 5MB.');
+    photoInput.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    socket.emit('chat-photo', { dataUrl: reader.result, filename: file.name });
+    photoInput.value = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+sendChatBtn?.addEventListener('click', handleSendChat);
+chatInput?.addEventListener('keyup', (event) => {
+  if (event.key === 'Enter') handleSendChat();
+});
+photoInput?.addEventListener('change', handlePhotoUpload);
+
 async function startWatch(cameraId, cameraName) {
-  if (pcs[cameraId]) return; // already watching
+  if (pcs[cameraId]) return;
 
   const container = document.createElement('div');
   container.className = 'camera-card';
@@ -160,7 +253,6 @@ async function startWatch(cameraId, cameraName) {
 
   console.log('[viewer] creating pc for', cameraId);
 
-  // ensure we can receive video by creating a recvonly transceiver
   try {
     pc.addTransceiver('video', { direction: 'recvonly' });
   } catch (e) {
@@ -171,7 +263,6 @@ async function startWatch(cameraId, cameraName) {
     video.srcObject = event.streams[0];
     console.log('[viewer] received track for', cameraId, event.streams[0]);
 
-    // FPS measurement using requestVideoFrameCallback when available
     const fpsBadgeEl = pcs[cameraId] && pcs[cameraId].fpsBadge ? pcs[cameraId].fpsBadge : fpsBadge;
     if (video.requestVideoFrameCallback) {
       let lastTime = performance.now();
@@ -189,7 +280,6 @@ async function startWatch(cameraId, cameraName) {
       };
       try { video.requestVideoFrameCallback(cb); } catch (e) {}
     } else if (video.getVideoPlaybackQuality) {
-      // fallback: sample every second
       setInterval(() => {
         try {
           const q = video.getVideoPlaybackQuality();

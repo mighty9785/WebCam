@@ -19,6 +19,36 @@ let viewerSocket = null;
 // Track multiple cameras and viewers
 const cameras = {}; // cameraId -> { id, name }
 const viewers = {}; // viewerId -> { id }
+const messages = [];
+const MESSAGE_TTL = 30 * 60 * 1000; // 30 minutes
+const MAX_CHAT_MESSAGES = 200;
+
+function createChatMessage(type, content, senderName, senderId, filename) {
+  const now = Date.now();
+  return {
+    id: `${now}-${Math.random().toString(36).slice(2, 6)}`,
+    type,
+    senderName: senderName || 'Anonymous',
+    senderId,
+    text: type === 'text' ? content : null,
+    dataUrl: type === 'image' ? content : null,
+    filename: filename || null,
+    timestamp: now,
+    expiresAt: now + MESSAGE_TTL
+  };
+}
+
+function pruneMessages() {
+  const now = Date.now();
+  const kept = messages.filter((message) => message.expiresAt > now);
+  if (kept.length !== messages.length) {
+    messages.length = 0;
+    messages.push(...kept);
+    io.emit('chat-history', messages);
+  }
+}
+
+setInterval(pruneMessages, 60 * 1000);
 
 function ensureHttpsCertificates() {
   try {
@@ -116,6 +146,8 @@ io.on('connection', (socket) => {
   const name = socket.handshake.query.name || null;
   console.log(`[signal] ${role} connected: ${socket.id}`);
 
+  socket.emit('chat-history', messages);
+
   if (role === 'camera') {
     // normalize name: ignore empty or literal 'null' strings
     const n = (typeof name === 'string' && name.trim() && name !== 'null') ? name.trim() : null;
@@ -165,6 +197,24 @@ io.on('connection', (socket) => {
   socket.on('get-cameras', () => {
     const list = Object.values(cameras).map((c) => ({ id: c.id, name: c.name || c.id }));
     socket.emit('cameras', list);
+  });
+
+  socket.on('chat-message', (payload) => {
+    if (!payload || typeof payload.text !== 'string') return;
+    const senderName = (typeof name === 'string' && name.trim() && name !== 'null') ? name.trim() : `${role}-${socket.id.slice(0, 6)}`;
+    const message = createChatMessage('text', payload.text.trim(), senderName, socket.id);
+    messages.push(message);
+    if (messages.length > MAX_CHAT_MESSAGES) messages.shift();
+    io.emit('chat-message', message);
+  });
+
+  socket.on('chat-photo', (payload) => {
+    if (!payload || typeof payload.dataUrl !== 'string') return;
+    const senderName = (typeof name === 'string' && name.trim() && name !== 'null') ? name.trim() : `${role}-${socket.id.slice(0, 6)}`;
+    const message = createChatMessage('image', payload.dataUrl, senderName, socket.id, payload.filename);
+    messages.push(message);
+    if (messages.length > MAX_CHAT_MESSAGES) messages.shift();
+    io.emit('chat-message', message);
   });
 
   socket.on('disconnect', () => {
