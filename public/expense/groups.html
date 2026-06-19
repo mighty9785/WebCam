@@ -50,11 +50,12 @@
   <script src="../js/supabase-client.js"></script>
   <script src="../js/expense-app.js"></script>
   <script>
-    initSupabaseClient();
-    const user = requireExpenseAuth();
-    if (!user) return;
+    (function () {
+      initSupabaseClient();
+      const user = requireExpenseAuth();
+      if (!user) return;
 
-    document.getElementById('logout-button').addEventListener('click', logoutExpense);
+      document.getElementById('logout-button').addEventListener('click', logoutExpense);
 
     const groupForm = document.getElementById('group-form');
     const selectedMembers = new Set();
@@ -166,6 +167,7 @@
     }
 
     renderGroups();
+    })();
   </script>
 </body>
 </html>
