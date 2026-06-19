@@ -28,6 +28,18 @@ body {
   padding: 24px;
 }
 
+/* Top navigation */
+.top-nav {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom: 18px;
+}
+.nav-menu { display:flex; gap:8px; }
+.nav-item { padding:8px 12px; border-radius:10px; cursor:pointer; background:transparent; color:var(--text); }
+.nav-item.active { background: rgba(255,255,255,0.04); box-shadow: 0 8px 20px rgba(2,6,23,0.25); }
+
 header,
 section,
 footer {

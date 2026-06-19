@@ -27,3 +27,26 @@ function generateQRCode(url) {
 }
 
 fetchLocalInfo();
+
+// Navigation behavior
+document.querySelectorAll('.nav-item').forEach((el) => {
+  el.addEventListener('click', (e) => {
+    const target = el.getAttribute('data-target');
+    if (!target) return;
+    if (target.startsWith('#')) {
+      const id = target.slice(1);
+      const node = document.getElementById(id);
+      if (node) node.scrollIntoView({ behavior: 'smooth' });
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      el.classList.add('active');
+      return;
+    }
+    window.location.href = target;
+  });
+});
+// highlight active menu by URL
+const path = window.location.pathname.split('/').pop() || 'index.html';
+document.querySelectorAll('.nav-item').forEach(n => {
+  const t = n.getAttribute('data-target');
+  if (t && t === path) n.classList.add('active');
+});
