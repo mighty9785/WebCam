@@ -9,7 +9,7 @@ const chatSend = document.getElementById('chatSend');
 const chatFile = document.getElementById('chatFile');
 
 function defaultName() {
-  return 'User-' + Math.random().toString(36).slice(2,6);
+  return 'Participant-' + Math.random().toString(36).slice(2,6);
 }
 
 function createSocket(name) {
@@ -18,6 +18,10 @@ function createSocket(name) {
   socket.on('connect', () => {
     myId = socket.id;
     console.log('chat connected', myId);
+  });
+
+  socket.on('connect_error', (error) => {
+    console.error('Chat socket error:', error);
   });
 
   socket.on('chat-history', (messages) => {
@@ -90,19 +94,9 @@ function sendFile(file) {
   r.readAsDataURL(file);
 }
 
-joinBtn.addEventListener('click', () => {
-  const name = (nameInput.value && nameInput.value.trim()) ? nameInput.value.trim() : defaultName();
-  createSocket(name);
-  nameInput.disabled = true;
-  joinBtn.disabled = true;
-});
+const topicName = (nameInput && nameInput.value && nameInput.value.trim()) ? nameInput.value.trim() : defaultName();
+createSocket(topicName);
 
-chatSend.addEventListener('click', sendText);
-chatText.addEventListener('keyup', (e) => { if (e.key === 'Enter') sendText(); });
-chatFile.addEventListener('change', (e) => { sendFile(e.target.files && e.target.files[0]); e.target.value = ''; });
-
-// Auto-join with a default name to reduce friction
-(function autoJoin(){
-  nameInput.value = defaultName();
-  joinBtn.click();
-})();
+if (chatSend) chatSend.addEventListener('click', sendText);
+if (chatText) chatText.addEventListener('keyup', (e) => { if (e.key === 'Enter') sendText(); });
+if (chatFile) chatFile.addEventListener('change', (e) => { sendFile(e.target.files && e.target.files[0]); e.target.value = ''; });
